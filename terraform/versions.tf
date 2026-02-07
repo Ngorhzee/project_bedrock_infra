@@ -7,18 +7,18 @@ terraform {
     }
   }
   backend "s3" {
-    bucket = "project-bedrock-terraform-state-1528"
+    bucket       = "project-bedrock-terraform-state-1528"
     use_lockfile = true
-     key          = "starttech-infra/terraform.tfstate"
+    key          = "starttech-infra/terraform.tfstate"
     region       = "us-east-1"
-    encrypt = true
-    
+    encrypt      = true
+
   }
 }
 
 provider "aws" {
-    region = "us-east-1"
-    
-    
-  
+  region = "us-east-1"
+
+
+
 }
