@@ -1,56 +1,16 @@
-# resource "aws_eks_cluster" "eks_cluster" {
-#     name = "project-bedrock-cluster"
-#     access_config {
-#       authentication_mode = "API"
-#     }
-#     version = "1.31"
-#     bootstrap_self_managed_addons = false
-#     vpc_config {
-#     endpoint_private_access = true
-#     endpoint_public_access  = true
-#       subnet_ids = var.private_subnets_id
-
-#     }
-    
-#     compute_config {
-#     enabled       = true
-#     node_pools    = ["general-purpose"]
-#     node_role_arn = aws_iam_role.eks_node.arn
-#   }
-#     kubernetes_network_config {
-#       elastic_load_balancing {
-#         enabled = true
-#       }
-      
-#     }
-#     storage_config {
-#     block_storage {
-#       enabled = true
-#     }
-#     }
-#     role_arn = aws_iam_role.cluster_iam_role.arn
-#     depends_on = [ 
-#       aws_iam_role_policy_attachment.cluster_AmazonEKSClusterPolicy,
-#       aws_iam_role_policy_attachment.node_AmazonEC2ContainerRegistryPullOnly,
-#       aws_iam_role_policy_attachment.node_AmazonEKSWorkerNodeMinimalPolicy, 
-#       aws_iam_role_policy_attachment.cluster_AmazonEKSLoadBalancingPolicy, 
-#       aws_iam_role_policy_attachment.cluster_AmazonEKSBlockStoragePolicy, ]
-#   tags = {
-#     Project = "Bedrock"
-#     Terraform   = "true"
-#   }
-
-# }
 module "eks_cluster" {
   source = "terraform-aws-modules/eks/aws"
   version = "~> 21.0"
   name = "project-bedrock-cluster"
   kubernetes_version = "1.33"
   endpoint_public_access = true
+  
   enable_cluster_creator_admin_permissions = true
   control_plane_scaling_config = {
     tier = "standard"
   }
+  
+  # To attach an existing vpc to cluster
   vpc_id = var.vpc_id
   subnet_ids = var.private_subnets_id
     addons = {
@@ -62,7 +22,11 @@ module "eks_cluster" {
     vpc-cni                = {
       before_compute = true
     }
+    amazon-cloudwatch-observability = {
+      
+    }
   }
+  enabled_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
    eks_managed_node_groups = {
     one = {
       name = "node-group-1"

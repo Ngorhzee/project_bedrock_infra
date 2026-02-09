@@ -14,8 +14,10 @@ resource "aws_cloudwatch_log_group" "lambda_log_group" {
   
   }
 }
+
+#S3 bucket
 resource "aws_s3_bucket" "s3_asset_bucket" {
-    bucket = "bedrock-assets-alt-soe-025-1528"
+    bucket = var.bucket_name
     tags = {
     Project = "Bedrock"
     Terraform   = "true"
@@ -24,16 +26,6 @@ resource "aws_s3_bucket" "s3_asset_bucket" {
     
   
 }
-
-resource "aws_s3_bucket_server_side_encryption_configuration" "server_side_encryption" {
-  bucket = aws_s3_bucket.s3_asset_bucket.id
-  rule {
-    apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
-    }
-  }
-}
-
 resource "aws_s3_bucket_public_access_block" "public_access_block" {
   bucket = aws_s3_bucket.s3_asset_bucket.id
   block_public_acls       = true
@@ -43,22 +35,7 @@ resource "aws_s3_bucket_public_access_block" "public_access_block" {
   
 }
 
-resource "aws_iam_role" "lambda_execution_role" {
-  name               = "lambda_execution_role"
-assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "lambda.amazonaws.com"
-        }
-      }
-    ]
-  })
-}
-
+# Lambda function
 resource "aws_lambda_function" "assets_lambda" {
   filename = data.archive_file.lambda_zip.output_path
   role = aws_iam_role.lambda_execution_role.arn
@@ -75,14 +52,35 @@ resource "aws_lambda_function" "assets_lambda" {
   
 }
 
+
+# IAM role for Lambda
+resource "aws_iam_role" "lambda_execution_role" {
+  name               = "lambda_execution_role"
+assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+#lambda permission to allow S3 to invoke the function
 resource "aws_lambda_permission" "lambda_s3_permission" {
-  statement_id  = "AllowExecutionFromS3"
+  statement_id  = "AllowS3Invoke"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.assets_lambda.function_name
   principal     = "s3.amazonaws.com"
   source_arn    = aws_s3_bucket.s3_asset_bucket.arn
   
 }
+
+#s3 bucket event notification to trigger lambda on object creation
 resource "aws_s3_bucket_notification" "event_notification" {
   bucket = aws_s3_bucket.s3_asset_bucket.id
 
