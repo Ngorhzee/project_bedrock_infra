@@ -45,14 +45,13 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: terraform output -json > ../grading.json
 
-      - name: Commit Grading JSON
+      - name: Upload Grading JSON as Artifact
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git add ../grading.json
-          git commit -m "Update grading.json" || echo "No changes"
-          git push
+        uses: actions/upload-artifact@v3
+        with:
+          name: grading-json
+          path: grading.json
+          retention-days: 90
 
   deploy-app:
     name: Deploy application with Helm
