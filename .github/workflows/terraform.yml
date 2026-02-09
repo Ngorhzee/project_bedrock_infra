@@ -53,3 +53,12 @@ jobs:
           git add ../grading.json
           git commit -m "Update grading.json" || echo "No changes"
           git push
+
+    deploy-app:
+      name: Deploy application with Helm
+      runs-on: ubuntu-latest
+      needs: terraform
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      run: |
+          chmod +x scripts/deploy-app.sh
+          ./scripts/deploy-app.sh
