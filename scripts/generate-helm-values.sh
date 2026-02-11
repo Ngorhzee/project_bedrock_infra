@@ -3,8 +3,7 @@ set -e
 
 echo "=== Generating Helm Values from Terraform Outputs ==="
 
-REPO_ROOT="${GITHUB_WORKSPACE:-.}"
-TERRAFORM_DIR="$REPO_ROOT/terraform"
+cd terraform
 
 # Get RDS endpoints and credentials from Terraform
 CATALOG_ENDPOINT=$(terraform output -raw catalog_mysql_endpoint 2>/dev/null || echo "")
