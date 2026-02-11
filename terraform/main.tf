@@ -1,9 +1,3 @@
-module "compute" {
-  source = "./compute"
-
-
-}
-
 module "networking" {
   source     = "./networking"
   aws_region = var.aws_region
