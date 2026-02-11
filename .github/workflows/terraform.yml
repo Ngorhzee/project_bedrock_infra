@@ -76,6 +76,8 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: grading-json
+      - name: Debug grading.json          
+        run: cat grading.json
  
       - name: Deploy Application
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
