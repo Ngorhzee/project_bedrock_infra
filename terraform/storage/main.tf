@@ -10,7 +10,7 @@ resource "aws_cloudwatch_log_group" "lambda_log_group" {
   retention_in_days = 14
 
   tags = {
-    Project = "Bedrock"
+    Project = "barakat-2025-capstone"
   
   }
 }
@@ -19,8 +19,8 @@ resource "aws_cloudwatch_log_group" "lambda_log_group" {
 resource "aws_s3_bucket" "s3_asset_bucket" {
     bucket = var.bucket_name
     tags = {
-    Project = "Bedrock"
-    Terraform   = "true"
+    Project = "barakat-2025-capstone"
+    
   }
 
     
@@ -32,7 +32,7 @@ resource "aws_s3_bucket_public_access_block" "public_access_block" {
   block_public_policy     = true
   ignore_public_acls      = true
   restrict_public_buckets = true
-  
+ 
 }
 
 # Lambda function
@@ -49,7 +49,9 @@ resource "aws_lambda_function" "assets_lambda" {
     system_log_level      = "WARN"
   }
   depends_on = [ aws_cloudwatch_log_group.lambda_log_group ]
-  
+  tags = {
+     Project = "barakat-2025-capstone"
+  }
 }
 
 
@@ -68,6 +70,9 @@ assume_role_policy = jsonencode({
       }
     ]
   })
+  tags = {
+     Project = "barakat-2025-capstone"
+  }
 }
 
 #lambda permission to allow S3 to invoke the function
@@ -77,6 +82,7 @@ resource "aws_lambda_permission" "lambda_s3_permission" {
   function_name = aws_lambda_function.assets_lambda.function_name
   principal     = "s3.amazonaws.com"
   source_arn    = aws_s3_bucket.s3_asset_bucket.arn
+
   
 }
 
@@ -89,6 +95,7 @@ resource "aws_s3_bucket_notification" "event_notification" {
     events              = ["s3:ObjectCreated:*"]
   }
   depends_on = [aws_lambda_permission.lambda_s3_permission]
+  
   
 }
 resource "aws_iam_role_policy" "lambda_role_policy" {

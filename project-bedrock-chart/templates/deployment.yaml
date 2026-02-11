@@ -60,6 +60,37 @@ spec:
           volumeMounts:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          env:
+            - name: CATALOG_DB_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: catalog-db-credentials
+                  key: endpoint
+            - name: CATALOG_DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: catalog-db-credentials
+                  key: username
+            - name: CATALOG_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: catalog-db-credentials
+                  key: password
+            - name: ORDERS_DB_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: orders-db-credentials
+                  key: endpoint
+            - name: ORDERS_DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: orders-db-credentials
+                  key: username
+            - name: ORDERS_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: orders-db-credentials
+                  key: password
       {{- with .Values.volumes }}
       volumes:
         {{- toYaml . | nindent 8 }}

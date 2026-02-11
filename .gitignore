@@ -7,3 +7,10 @@ node_modules/
 .terraform.lock.hcl
 terraform.tfstate*
 terraform.tfvars*
+# Helm generated values
+project-bedrock-chart/values-generated.yaml
+
+# Secrets
+*.pem
+*.key
+secrets/

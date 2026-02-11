@@ -1,0 +1,13 @@
+# retail-store-helm/templates/configmap.yaml
+
+{{- if .Values.rds.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rds-config
+  namespace: {{ .Values.namespace }}
+data:
+  USE_EXTERNAL_DB: "true"
+  CATALOG_DB_TYPE: "mysql"
+  ORDERS_DB_TYPE: "postgresql"
+{{- end }}

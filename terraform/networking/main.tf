@@ -17,8 +17,8 @@ module "vpc" {
   enable_vpn_gateway = false
 
   tags = {
-    Project = "Bedrock"
-    Terraform   = "true"
+    Project = "barakat-2025-capstone"
+    
   }
   public_subnet_tags = {
     "kubernetes.io/role/elb" = "1"

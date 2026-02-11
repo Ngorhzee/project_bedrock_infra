@@ -159,3 +159,53 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+# retail-store-helm/values.yaml
+
+# Default values for project-bedrock-chart.
+
+rds:
+  enabled: false  # Will be set to true by generate-helm-values.sh when RDS exists
+  
+  catalog:
+    endpoint: ""
+    host: ""
+    port: 3306
+    username: ""
+    password: ""
+    database: "catalog"
+  
+  orders:
+    endpoint: ""
+    host: ""
+    port: 5432
+    username: ""
+    password: ""
+    database: "orders"
+
+# UI Service configuration
+ui:
+  service:
+    type: LoadBalancer
+    annotations:
+      service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+      service.beta.kubernetes.io/aws-load-balancer-type: nlb
+
+# Rest of your existing values...
+replicaCount: 1
+
+image:
+  repository: nginx
+  pullPolicy: IfNotPresent
+  tag: ""
+
+# Database configuration
+database:
+  useExternalDb: true
+  
+environmentVariables:
+  CATALOG_DB_TYPE: mysql
+  ORDERS_DB_TYPE: postgresql
+  LOG_LEVEL: info
+
+namespace: retail-app  
