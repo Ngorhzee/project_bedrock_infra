@@ -3,16 +3,20 @@ set -e
 
 echo "=== Generating Helm Values from Terraform Outputs ==="
 
-TERRAFORM_OUTPUTS="$GITHUB_WORKSPACE/grading.json"
-if [ ! -f "$TERRAFORM_OUTPUTS" ]; then
-  echo "Error: grading.json not found"
-  exit 1
+TERRAFORM_OUTPUTS="${GITHUB_WORKSPACE:-$(git rev-parse --show-toplevel)}/grading.json"
+
+if [ -f "$TERRAFORM_OUTPUTS" ]; then
+  echo "📦 Reading from grading.json artifact..."
+  CATALOG_ENDPOINT=$(jq -r '.catalog_mysql_endpoint.value // empty' "$TERRAFORM_OUTPUTS")
+  ORDERS_ENDPOINT=$(jq -r '.orders_postgresql_endpoint.value // empty' "$TERRAFORM_OUTPUTS")
+else
+  echo "🔧 Running terraform output locally..."
+  REPO_ROOT=$(git rev-parse --show-toplevel)
+  cd "$REPO_ROOT/terraform"
+  CATALOG_ENDPOINT=$(terraform output -raw catalog_mysql_endpoint 2>/dev/null || echo "")
+  ORDERS_ENDPOINT=$(terraform output -raw orders_postgresql_endpoint 2>/dev/null || echo "")
+  cd "$REPO_ROOT"
 fi
-
-# Get RDS endpoints and credentials from Terraform
-CATALOG_ENDPOINT=$(jq -r '.catalog_mysql_endpoint.value // empty' "$TERRAFORM_OUTPUTS")
-ORDERS_ENDPOINT=$(jq -r '.orders_postgresql_endpoint.value // empty' "$TERRAFORM_OUTPUTS")
-
 # Get secrets from AWS Secrets Manager
 CATALOG_SECRET=$(aws secretsmanager get-secret-value \
   --secret-id bedrock/catalog/mysql-credentials \
@@ -32,7 +36,7 @@ cd ..
 if [ -z "$CATALOG_ENDPOINT" ] || [ -z "$ORDERS_ENDPOINT" ]; then
   echo "⚠️  RDS instances not found. Using in-cluster databases."
   
-  cat > project-bedrock-chart/values-generated.yaml << EOF
+  cat > ./project-bedrock-chart/values-generated.yaml << EOF
 namespace: retail-app
 
 rds:
@@ -52,7 +56,7 @@ else
   ORDERS_DB=$(echo $ORDERS_SECRET | jq -r '.database')
   
   # Generate values file
-  cat > project-bedrock-chart/values-generated.yaml << EOF
+  cat > ./project-bedrock-chart/values-generated.yaml << EOF
 namespace: retail-app
 
 rds:
