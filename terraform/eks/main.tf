@@ -94,3 +94,22 @@ resource "aws_iam_role_policy_attachment" "cloudwatch_agent" {
   role       = aws_iam_role.eks_node.name
 }
 
+resource "aws_eks_access_entry" "iam_user" {
+  cluster_name  = module.eks_cluster.cluster_name
+  principal_arn = "arn:aws:iam::651706736165:user/bedrock-dev-view"
+  type          = "STANDARD"
+  tags = {
+     Project = "barakat-2025-capstone"
+  }
+}
+
+resource "aws_eks_access_policy_association" "iam_user" {
+  cluster_name  = module.eks_cluster.cluster_name
+  principal_arn = "arn:aws:iam::651706736165:user/bedrock-dev-view"
+policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSViewPolicy"
+
+  access_scope {
+     type       = "namespace"
+    namespaces = ["retail-app"]
+  }
+}
